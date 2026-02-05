@@ -1,38 +1,90 @@
-import { type User, type InsertUser } from "@shared/schema";
-import { randomUUID } from "crypto";
-
-// modify the interface with any CRUD methods
-// you might need
+import { db } from "./db";
+import {
+  collections, variants, editRequests,
+  type InsertCollection, type InsertVariant, type InsertEditRequest,
+  type Collection, type Variant, type EditRequest
+} from "@shared/schema";
+import { eq, desc, or, ilike } from "drizzle-orm";
 
 export interface IStorage {
-  getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  // Collections
+  getCollections(search?: string, filter?: 'trending' | 'new'): Promise<Collection[]>;
+  getCollectionBySlug(slug: string): Promise<(Collection & { variants: Variant[] }) | undefined>;
+  createCollection(collection: InsertCollection): Promise<Collection>;
+  
+  // Variants
+  createVariant(variant: InsertVariant): Promise<Variant>;
+  
+  // Edit Requests
+  createEditRequest(request: InsertEditRequest): Promise<EditRequest>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<string, User>;
-
-  constructor() {
-    this.users = new Map();
+export class DatabaseStorage implements IStorage {
+  async getCollections(search?: string, filter?: 'trending' | 'new'): Promise<Collection[]> {
+    let query = db.select().from(collections);
+    
+    const conditions = [];
+    
+    if (search) {
+      conditions.push(
+        or(
+          ilike(collections.title, `%${search}%`),
+          ilike(collections.description, `%${search}%`)
+        )
+      );
+    }
+    
+    if (filter === 'trending') {
+      conditions.push(eq(collections.isTrending, true));
+    } else if (filter === 'new') {
+      conditions.push(eq(collections.isNew, true));
+    }
+    
+    // Default sort by creation date
+    return await query
+      .where(or(...conditions))
+      .orderBy(desc(collections.createdAt));
   }
 
-  async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
+  async getCollectionBySlug(slug: string): Promise<(Collection & { variants: Variant[] }) | undefined> {
+    const [collection] = await db
+      .select()
+      .from(collections)
+      .where(eq(collections.slug, slug));
+      
+    if (!collection) return undefined;
+    
+    const collectionVariants = await db
+      .select()
+      .from(variants)
+      .where(eq(variants.collectionId, collection.id));
+      
+    return { ...collection, variants: collectionVariants };
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+  async createCollection(insertCollection: InsertCollection): Promise<Collection> {
+    const [collection] = await db
+      .insert(collections)
+      .values(insertCollection)
+      .returning();
+    return collection;
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
-    return user;
+  async createVariant(insertVariant: InsertVariant): Promise<Variant> {
+    const [variant] = await db
+      .insert(variants)
+      .values(insertVariant)
+      .returning();
+    return variant;
+  }
+
+  async createEditRequest(insertRequest: InsertEditRequest): Promise<EditRequest> {
+    const [request] = await db
+      .insert(editRequests)
+      .values(insertRequest)
+      .returning();
+    return request;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
