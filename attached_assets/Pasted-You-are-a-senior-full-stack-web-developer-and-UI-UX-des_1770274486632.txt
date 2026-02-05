@@ -1,0 +1,303 @@
+You are a senior full-stack web developer and UI/UX designer.
+Build a modern, smooth, dark-themed CapCut Templates website with a Pinterest-style layout, scalable structure, and clean code.
+
+🌐 PROJECT OVERVIEW
+
+Create a CapCut Templates Platform where:
+
+Users browse template collections
+
+Each collection contains 6 template variants
+
+Users MUST be logged in to access template links
+
+Videos are previews only (15–20 sec)
+
+Monetization via ads (dummy placeholders for now)
+
+UI is black background + neon purple accents
+
+Smooth animations, modern feel
+
+🧱 SITE STRUCTURE (PAGES REQUIRED)
+1️⃣ HOME PAGE (/index.html)
+
+Purpose: Show all template collections
+
+Pinterest-style masonry grid
+
+50 collection cards (dummy data)
+
+Each card represents 1 template collection
+
+Each collection internally has 6 variants
+
+Card includes:
+
+Autoplay muted video preview
+
+Template name (e.g., “Tiki Tiki”)
+
+Badge: Trending / New
+
+Text: “6 Variations”
+
+Clicking card opens:
+
+/template.html?slug=tiki-tiki
+
+2️⃣ TEMPLATE DETAIL PAGE (/template.html)
+
+Purpose: Show variants of ONE template
+
+Page title:
+“Tiki Tiki – CapCut Template Variations”
+
+Grid layout with 6 variant cards
+
+Each variant card contains:
+
+Embedded preview video
+
+Variant name (V1 / Beat Sync / Slow / Flash)
+
+Button:
+
+“Use Template”
+
+🔐 AUTH RESTRICTION (IMPORTANT)
+
+If user is NOT logged in:
+
+Disable template buttons
+
+Show message:
+
+“Login required to access template links”
+
+Only logged-in users can click template links
+
+3️⃣ EDITING SERVICE CTA (SPECIAL FEATURE)
+
+Below variant grid, add a highlighted neon-bordered box:
+
+Text (professional but friendly):
+
+“Don’t know how to edit or use this template?
+No worries — we’ll do it for you.”
+
+Button:
+
+“Request Custom Edit”
+
+On click:
+
+Smooth modal opens
+
+Modal form fields:
+
+User email
+
+Template name (auto-filled)
+
+Optional message
+
+Submit button (dummy handler for now)
+
+Purpose:
+
+Lead generation
+
+Custom editing service
+
+4️⃣ AUTH SYSTEM (UI ONLY – DUMMY DATA)
+
+Create:
+
+/login.html
+
+/register.html
+
+/profile.html
+
+Features:
+
+Sign up
+
+Sign in
+
+Sign out
+
+Session simulated using localStorage
+
+Profile page shows:
+
+Email
+
+Logout button
+
+⚠️ No backend required for now.
+
+5️⃣ SLIDE-IN NAVIGATION BAR (LEFT SWIPE)
+
+Mobile + Desktop
+
+Hidden left sidebar
+
+Opens via:
+
+Swipe from left (mobile)
+
+Hamburger icon (desktop)
+
+Smooth animation (ease-in-out)
+
+Nav Items:
+
+Home
+
+Trending
+
+Profile
+
+About
+
+Privacy Policy
+
+Copyright
+
+DMCA
+
+Contact
+
+6️⃣ LEGAL & INFO PAGES (SIMPLE BUT CLEAN)
+
+Create pages:
+
+/about.html
+
+/privacy.html
+
+/copyright.html
+
+/dmca.html
+
+Each page:
+
+Minimal text
+
+Clean typography
+
+Neon purple headings
+
+SEO-friendly layout
+
+🎨 UI / DESIGN REQUIREMENTS
+THEME
+
+Background: Pure black
+
+Accent color: Neon purple
+
+Cards:
+
+Rounded corners
+
+Glow on hover
+
+Buttons:
+
+Neon border
+
+Hover glow animation
+
+ANIMATIONS
+
+Page transitions (fade + slide)
+
+Hover scale effects
+
+Smooth scrolling
+
+Modal open/close animation
+
+📦 COMPONENT COUNT REQUIREMENTS
+
+50 collection cards on homepage
+
+Each collection = 6 variant cards
+
+Use dummy YouTube embed links
+
+Use dummy CapCut template links
+
+📁 FILE STRUCTURE
+/project
+ ├── index.html
+ ├── template.html
+ ├── login.html
+ ├── register.html
+ ├── profile.html
+ ├── about.html
+ ├── privacy.html
+ ├── copyright.html
+ ├── dmca.html
+ ├── style.css
+ ├── script.js
+ └── auth.js
+
+⚙️ TECH STACK
+
+HTML5
+
+CSS3 (modern, flex/grid)
+
+Vanilla JavaScript
+
+No frameworks
+
+No backend
+
+Use localStorage for auth state
+
+📈 FUTURE READY
+
+Structure code so that:
+
+Data can later be replaced by Google Sheets / API
+
+Auth can later be replaced by Firebase
+
+Ads can be easily injected
+
+🎯 FINAL GOAL
+
+Deliver:
+
+Clean UI
+
+Smooth UX
+
+Scalable architecture
+
+Dummy content fully visible
+
+Auth-gated template links
+
+OUTPUT EXPECTATION:
+Provide complete HTML, CSS, and JS code with comments and clean structure.
+
+🔥 END OF PROMPT
+🧠 MY EXTRA NOTES (FOR YOU, NOT CLAUDE)
+
+This structure is AdSense friendly
+
+Auth-gate increases:
+
+retention
+
+perceived value
+
+Editing service = hidden money printer
+
+Neon purple + black = 🔥 CapCut audience loves it
