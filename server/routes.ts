@@ -75,6 +75,13 @@ async function seedDatabase() {
 
   console.log("Seeding database with CapCut templates...");
 
+  const youtubeEmbeds = [
+    "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "https://www.youtube.com/embed/jNQXAC9IVRw",
+    "https://www.youtube.com/embed/9bZkp7q19f0",
+    "https://www.youtube.com/embed/kJQP7kiw5Fk",
+  ];
+
   const templates = [
     { title: "Tiki Tiki", isTrending: true, isNew: false },
     { title: "Slow Motion Blur", isTrending: true, isNew: false },
@@ -90,39 +97,28 @@ async function seedDatabase() {
     { title: "3D Zoom Pro", isTrending: true, isNew: true },
   ];
   
-  // Fill up to 50 items by repeating/varying
-  const fullTemplates = [];
   for (let i = 0; i < 50; i++) {
     const base = templates[i % templates.length];
-    fullTemplates.push({
-      title: `${base.title} ${Math.floor(i / 12) + 1}`, // e.g. Tiki Tiki 1, Tiki Tiki 2...
+    const title = `${base.title} ${Math.floor(i / 12) + 1}`;
+    const slug = title.toLowerCase().replace(/ /g, "-").replace(/[^\w-]/g, "");
+    
+    const collection = await storage.createCollection({
+      title: title,
+      slug: slug,
+      description: `Create amazing videos with the ${title} CapCut template.`,
+      coverImage: `https://images.unsplash.com/photo-${1500000000000 + Math.floor(Math.random() * 1000000)}?w=500&h=800&fit=crop`,
       isTrending: base.isTrending,
       isNew: base.isNew,
     });
-  }
 
-  for (const t of fullTemplates) {
-    const slug = t.title.toLowerCase().replace(/ /g, "-").replace(/[^\w-]/g, "");
-    
-    // Create Collection
-    const collection = await storage.createCollection({
-      title: t.title,
-      slug: slug,
-      description: `Create amazing videos with the ${t.title} CapCut template. Trending on TikTok and Reels.`,
-      coverImage: `https://images.unsplash.com/photo-${1500000000000 + Math.floor(Math.random() * 1000000)}?w=500&h=800&fit=crop`, // Dummy unsplash
-      isTrending: t.isTrending,
-      isNew: t.isNew,
-    });
-
-    // Create 6 Variants for each
     const variantNames = ["Original", "Slow Motion", "Beat Sync", "Flash Warning", "Color Grade", "Speed Ramp"];
     
     for (const vName of variantNames) {
       await storage.createVariant({
         collectionId: collection.id,
         name: vName,
-        previewVideoUrl: "https://assets.mixkit.co/videos/preview/mixkit-girl-in-neon-sign-1232-large.mp4", // Placeholder video
-        templateLink: "https://www.capcut.com/template/dummy-link", // Placeholder link
+        previewVideoUrl: youtubeEmbeds[Math.floor(Math.random() * youtubeEmbeds.length)],
+        templateLink: "https://www.capcut.com/t/ZmFqA1B2C/", // Real-looking example link
       });
     }
   }
