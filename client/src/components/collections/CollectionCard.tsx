@@ -17,13 +17,21 @@ export function CollectionCard({ collection }: CollectionCardProps) {
       >
         {/* Aspect Ratio Container (9:16 approx) */}
         <div className="relative aspect-[9/14] overflow-hidden">
-          {/* Image */}
-          <img 
-            src={collection.coverImage} 
-            alt={collection.title}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-            loading="lazy"
-          />
+          {/* Media Content */}
+          {collection.coverImage?.includes("youtube.com/embed") ? (
+            <iframe
+              src={collection.coverImage}
+              className="w-full h-full border-0 pointer-events-none"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            />
+          ) : (
+            <img 
+              src={collection.coverImage} 
+              alt={collection.title}
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              loading="lazy"
+            />
+          )}
           
           {/* Overlay Gradient */}
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />

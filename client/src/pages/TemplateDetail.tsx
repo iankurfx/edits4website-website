@@ -90,16 +90,24 @@ export default function TemplateDetail() {
           >
             {/* Video Preview Area */}
             <div className="relative aspect-[9/16] bg-black">
-              {/* Using video tag if URL is valid video, else img for fallback */}
-              <video
-                src={variant.previewVideoUrl}
-                poster={collection.coverImage} // Fallback poster
-                className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-300"
-                autoPlay
-                muted
-                loop
-                playsInline
-              />
+              {variant.previewVideoUrl?.includes("youtube.com/embed") ? (
+                <iframe
+                  src={`${variant.previewVideoUrl}?autoplay=1&mute=1&loop=1&playlist=${variant.previewVideoUrl.split("/").pop()?.split("?")[0]}`}
+                  className="w-full h-full border-0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              ) : (
+                <video
+                  src={variant.previewVideoUrl}
+                  poster={collection.coverImage} // Fallback poster
+                  className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-300"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                />
+              )}
               
               <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90" />
               
