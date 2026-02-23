@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, boolean, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
@@ -9,7 +9,7 @@ export * from "./models/auth";
 // === TABLE DEFINITIONS ===
 
 export const collections = pgTable("collections", {
-  id: serial("id").primaryKey(),
+  id: uuid("id").primaryKey().defaultRandom(),
   title: text("title").notNull(),
   slug: text("slug").notNull().unique(),
   description: text("description"),
@@ -20,8 +20,8 @@ export const collections = pgTable("collections", {
 });
 
 export const variants = pgTable("variants", {
-  id: serial("id").primaryKey(),
-  collectionId: integer("collection_id").notNull(),
+  id: uuid("id").primaryKey().defaultRandom(),
+  collectionId: uuid("collection_id").notNull(),
   name: text("name").notNull(), // e.g., "V1", "Beat Sync", "Slow Motion"
   previewVideoUrl: text("preview_video_url").notNull(),
   templateLink: text("template_link").notNull(), // The actual CapCut link
@@ -29,7 +29,7 @@ export const variants = pgTable("variants", {
 });
 
 export const editRequests = pgTable("edit_requests", {
-  id: serial("id").primaryKey(),
+  id: uuid("id").primaryKey().defaultRandom(),
   userEmail: text("user_email").notNull(),
   templateName: text("template_name").notNull(),
   message: text("message"),

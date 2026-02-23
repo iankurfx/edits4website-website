@@ -1,91 +1,11 @@
-import type { Express } from "express";
-import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { api } from "@shared/routes";
-import { z } from "zod";
-import { setupAuth, registerAuthRoutes } from "./replit_integrations/auth";
-
-export async function registerRoutes(
-  httpServer: Server,
-  app: Express
-): Promise<Server> {
-
-  // Setup Auth
-  await setupAuth(app);
-  registerAuthRoutes(app);
-
-  // === Collections ===
-  app.get(api.collections.list.path, async (req, res) => {
-    try {
-      const search = req.query.search as string | undefined;
-      const filter = req.query.filter as 'trending' | 'new' | undefined;
-      const collections = await storage.getCollections(search, filter);
-      res.json(collections);
-    } catch (error: any) {
-      console.error(error);
-      res.status(500).json({ message: error.message || "Internal server error" });
-    }
-  });
-
-  app.get(api.collections.get.path, async (req, res) => {
-    try {
-      const slug = req.params.slug;
-      if (typeof slug !== 'string') {
-        return res.status(400).json({ message: "Invalid slug" });
-      }
-      const collection = await storage.getCollectionBySlug(slug);
-      if (!collection) {
-        return res.status(404).json({ message: "Collection not found" });
-      }
-      res.json(collection);
-    } catch (error: any) {
-      console.error(error);
-      res.status(500).json({ message: error.message || "Internal server error" });
-    }
-  });
-
-  app.post(api.collections.create.path, async (req, res) => {
-    try {
-      const input = api.collections.create.input.parse(req.body);
-      const collection = await storage.createCollection(input);
-      res.status(201).json(collection);
-    } catch (err) {
-      if (err instanceof z.ZodError) {
-        return res.status(400).json({
-          message: err.errors[0].message,
-          field: err.errors[0].path.join('.'),
-        });
-      }
-      throw err;
-    }
-  });
-
-  // === Edit Requests ===
-  app.post(api.editRequests.create.path, async (req, res) => {
-    try {
-      const input = api.editRequests.create.input.parse(req.body);
-      const request = await storage.createEditRequest(input);
-      res.status(201).json(request);
-    } catch (err) {
-      if (err instanceof z.ZodError) {
-        return res.status(400).json({
-          message: err.errors[0].message,
-          field: err.errors[0].path.join('.'),
-        });
-      }
-      throw err;
-    }
-  });
-
-  return httpServer;
-}
 
 /**
  * GUIDE: MANUALLY ADDING TEMPLATES
  * To add or change templates, edit the 'manualTemplates' array below.
  * Each entry creates one "Box" on the home page with 6 variants.
  */
-async function seedDatabase() {
+export async function seedDatabase() {
   const existing = await storage.getCollections();
   if (existing.length > 0) return;
 
@@ -454,4 +374,14 @@ async function seedDatabase() {
   }
 
   console.log("Seeding complete.");
+}
+
+// Ensure the seed function runs automatically when executed directly via `tsx server/seed.ts`
+if (process.argv[1] && process.argv[1].endsWith('seed.ts')) {
+  seedDatabase()
+    .then(() => process.exit(0))
+    .catch((err) => {
+      console.error(err);
+      process.exit(1);
+    });
 }
