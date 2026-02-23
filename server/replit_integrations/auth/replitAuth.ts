@@ -6,6 +6,8 @@ import session from "express-session";
 import type { Express, RequestHandler } from "express";
 import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
+import { pool } from "../../db";
+import { authStorage } from "./storage";
 
 function shouldUseLocalAuth() {
   if (process.env.USE_LOCAL_AUTH === "true" || process.env.USE_LOCAL_AUTH === "1") return true;
@@ -61,7 +63,6 @@ export function getSession() {
     });
   }
 
-  const { pool } = require("../../db");
   const pgStore = connectPg(session);
   const sessionStore = new pgStore({
     pool: pool,
@@ -93,7 +94,6 @@ function updateUserSession(
 }
 
 async function upsertUser(claims: any) {
-  const { authStorage } = await import("./storage");
   await authStorage.upsertUser({
     id: claims["sub"],
     email: claims["email"],

@@ -4,6 +4,7 @@ import {
   type Collection, type Variant, type EditRequest
 } from "@shared/schema";
 import { eq, desc, or, ilike } from "drizzle-orm";
+import { db } from "./db";
 
 export interface IStorage {
   // Collections
@@ -20,23 +21,16 @@ export interface IStorage {
 
 export class DatabaseStorage implements IStorage {
   async getCollections(search?: string, filter?: 'trending' | 'new'): Promise<Collection[]> {
-    const { db } = await import("./db");
     let query = db.select().from(collections);
 
     const conditions = [];
-
     if (search) {
-      conditions.push(
-        or(
-          ilike(collections.title, `%${search}%`),
-          ilike(collections.description, `%${search}%`)
-        )
-      );
+      conditions.push(ilike(collections.title, `%${search}%`));
     }
-
     if (filter === 'trending') {
       conditions.push(eq(collections.isTrending, true));
-    } else if (filter === 'new') {
+    }
+    if (filter === 'new') {
       conditions.push(eq(collections.isNew, true));
     }
 
@@ -48,11 +42,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getCollectionBySlug(slug: string): Promise<(Collection & { variants: Variant[] }) | undefined> {
-    const { db } = await import("./db");
-    const [collection] = await db
-      .select()
-      .from(collections)
-      .where(eq(collections.slug, slug));
+    const [collection] = await db.select().from(collections).where(eq(collections.slug, slug));
 
     if (!collection) return undefined;
 
@@ -64,31 +54,28 @@ export class DatabaseStorage implements IStorage {
     return { ...collection, variants: collectionVariants };
   }
 
-  async createCollection(insertCollection: InsertCollection): Promise<Collection> {
-    const { db } = await import("./db");
-    const [collection] = await db
+  async createCollection(collection: InsertCollection): Promise<Collection> {
+    const [newCollection] = await db
       .insert(collections)
-      .values(insertCollection)
+      .values({ ...collection, createdAt: new Date() })
       .returning();
-    return collection;
+    return newCollection;
   }
 
-  async createVariant(insertVariant: InsertVariant): Promise<Variant> {
-    const { db } = await import("./db");
-    const [variant] = await db
+  async createVariant(variant: InsertVariant): Promise<Variant> {
+    const [newVariant] = await db
       .insert(variants)
-      .values(insertVariant)
+      .values({ ...variant, createdAt: new Date() })
       .returning();
-    return variant;
+    return newVariant;
   }
 
-  async createEditRequest(insertRequest: InsertEditRequest): Promise<EditRequest> {
-    const { db } = await import("./db");
-    const [request] = await db
+  async createEditRequest(request: InsertEditRequest): Promise<EditRequest> {
+    const [newRequest] = await db
       .insert(editRequests)
-      .values(insertRequest)
+      .values({ ...request, createdAt: new Date() })
       .returning();
-    return request;
+    return newRequest;
   }
 }
 
