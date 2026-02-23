@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: code-curator-web
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: VERCEL
+        value: "" # Ensure server runs normally
+      - key: DATABASE_URL
+        sync: false # User needs to input their Supabase pooler URL in the Render dashboard
+    autoDeploy: true
