@@ -61,9 +61,10 @@ export function getSession() {
     });
   }
 
+  const { pool } = require("../../db");
   const pgStore = connectPg(session);
   const sessionStore = new pgStore({
-    conString: process.env.DATABASE_URL,
+    pool: pool,
     createTableIfMissing: false,
     ttl: sessionTtl,
     tableName: "sessions",

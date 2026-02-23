@@ -79,8 +79,10 @@ async function setupApp() {
     if (!process.env.VERCEL) {
       serveStatic(app);
     }
-  } else {
-    const { setupVite } = await import("./vite");
+  } else if (!process.env.VERCEL) {
+    // Hide Vite import from Vercel's static bundler to prevent esbuild crashes
+    const viteModule = "./vite";
+    const { setupVite } = await import(/* @vite-ignore */ viteModule);
     await setupVite(httpServer, app);
   }
   isSetup = true;
