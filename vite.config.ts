@@ -4,6 +4,13 @@ import path from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 
 export default defineConfig({
+  // Allow overriding Vite's cache dir (useful on low-disk systems).
+  // Example (PowerShell):
+  //   $env:VITE_CACHE_DIR = "D:\\vite-cache\\code-curator"
+  //   npm run dev
+  cacheDir:
+    process.env.VITE_CACHE_DIR ??
+    path.resolve(import.meta.dirname, "node_modules", ".vite"),
   plugins: [
     react(),
     runtimeErrorOverlay(),
@@ -27,6 +34,12 @@ export default defineConfig({
     },
   },
   root: path.resolve(import.meta.dirname, "client"),
+  optimizeDeps: {
+    // Saves disk space by skipping source maps in the deps pre-bundle cache.
+    esbuildOptions: {
+      sourcemap: false,
+    },
+  },
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,

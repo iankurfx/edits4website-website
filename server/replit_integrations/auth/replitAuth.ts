@@ -6,7 +6,33 @@ import session from "express-session";
 import type { Express, RequestHandler } from "express";
 import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
-import { authStorage } from "./storage";
+
+function shouldUseLocalAuth() {
+  if (process.env.USE_LOCAL_AUTH === "true" || process.env.USE_LOCAL_AUTH === "1") return true;
+  // Default to local auth outside Replit-style env configuration.
+  return !process.env.REPL_ID || !process.env.SESSION_SECRET;
+}
+
+function ensureLocalUser(req: any) {
+  const sessionObj = req.session as any;
+  const now = Math.floor(Date.now() / 1000);
+
+  if (!sessionObj.localUser) {
+    sessionObj.localUser = {
+      claims: {
+        sub: "local-user",
+        email: "local@example.com",
+        first_name: "Local",
+        last_name: "User",
+        profile_image_url: null,
+      },
+      expires_at: now + 7 * 24 * 60 * 60,
+    };
+  }
+
+  req.user = sessionObj.localUser;
+  req.isAuthenticated = () => true;
+}
 
 const getOidcConfig = memoize(
   async () => {
@@ -20,6 +46,21 @@ const getOidcConfig = memoize(
 
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
+
+  // Local dev auth: in-memory sessions, non-secure cookies (works on http://localhost)
+  if (shouldUseLocalAuth()) {
+    return session({
+      secret: process.env.SESSION_SECRET ?? "local-dev-secret",
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        httpOnly: true,
+        secure: false,
+        maxAge: sessionTtl,
+      },
+    });
+  }
+
   const pgStore = connectPg(session);
   const sessionStore = new pgStore({
     conString: process.env.DATABASE_URL,
@@ -34,7 +75,7 @@ export function getSession() {
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === "production",
       maxAge: sessionTtl,
     },
   });
@@ -51,6 +92,7 @@ function updateUserSession(
 }
 
 async function upsertUser(claims: any) {
+  const { authStorage } = await import("./storage");
   await authStorage.upsertUser({
     id: claims["sub"],
     email: claims["email"],
@@ -63,6 +105,28 @@ async function upsertUser(claims: any) {
 export async function setupAuth(app: Express) {
   app.set("trust proxy", 1);
   app.use(getSession());
+  // Local auth mode: always treat the visitor as logged in.
+  if (shouldUseLocalAuth()) {
+    app.get("/api/login", (req, res) => {
+      ensureLocalUser(req);
+      res.redirect("/");
+    });
+
+    app.get("/api/logout", (req: any, res) => {
+      if (req.session) {
+        delete (req.session as any).localUser;
+      }
+      res.redirect("/");
+    });
+
+    app.use((req, _res, next) => {
+      ensureLocalUser(req);
+      next();
+    });
+
+    return;
+  }
+
   app.use(passport.initialize());
   app.use(passport.session());
 
@@ -131,6 +195,11 @@ export async function setupAuth(app: Express) {
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
+  if (shouldUseLocalAuth()) {
+    ensureLocalUser(req);
+    return next();
+  }
+
   const user = req.user as any;
 
   if (!req.isAuthenticated() || !user.expires_at) {

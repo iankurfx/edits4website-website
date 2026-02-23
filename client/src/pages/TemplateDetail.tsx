@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useCollection } from "@/hooks/use-collections";
 import { useRoute } from "wouter";
 import { Loader2, ArrowLeft, Play, Lock, ExternalLink } from "lucide-react";
@@ -14,6 +15,7 @@ export default function TemplateDetail() {
   const { data: collection, isLoading, error } = useCollection(slug);
   const { user } = useAuth();
   const { toast } = useToast();
+  const [showContactPopup, setShowContactPopup] = useState(false);
 
   if (isLoading) {
     return (
@@ -35,6 +37,11 @@ export default function TemplateDetail() {
   }
 
   const handleUseTemplate = (url: string) => {
+    if (collection?.title.toLowerCase() === "dil dooba" || collection?.title.toLowerCase() === "zaalima") {
+      setShowContactPopup(true);
+      return;
+    }
+
     if (!user) {
       toast({
         title: "Login Required",
@@ -42,7 +49,7 @@ export default function TemplateDetail() {
         variant: "destructive",
       });
       // Optional: redirect to login after delay
-      setTimeout(() => window.location.href = "/api/login", 1500);
+      setTimeout(() => window.location.href = "/login", 1500);
       return;
     }
     window.open(url, "_blank");
@@ -55,7 +62,7 @@ export default function TemplateDetail() {
         <Link href="/" className="inline-flex items-center text-sm text-white/50 hover:text-primary mb-6 transition-colors">
           <ArrowLeft className="mr-2 h-4 w-4" /> Back to Templates
         </Link>
-        
+
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-white/10">
           <div>
             <h1 className="text-4xl md:text-5xl font-display font-bold text-white mb-3 text-glow">
@@ -79,20 +86,22 @@ export default function TemplateDetail() {
       </div>
 
       {/* Variants Grid */}
-      <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
+      <div className="container mx-auto px-2 md:px-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 mb-20">
         {collection.variants.map((variant, idx) => (
           <motion.div
             key={variant.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: idx * 0.1 }}
-            className="group bg-card border border-white/10 rounded-2xl overflow-hidden hover:border-primary/50 transition-all duration-300 hover:shadow-[0_0_25px_-5px_rgba(168,85,247,0.2)]"
+            className="group bg-card border border-white/10 rounded-[14px] overflow-hidden hover:border-primary/50 transition-all duration-300 hover:shadow-[0_0_15px_-5px_rgba(168,85,247,0.2)]"
           >
             {/* Video Preview Area */}
-            <div className="relative aspect-[9/16] bg-black">
+            {/* Video Preview Area */}
+            {/* Video Preview Area - Enforce Aspect Ratio 9:16 */}
+            <div className="relative aspect-[9/16] bg-black border-b border-white/10">
               {variant.previewVideoUrl?.includes("youtube.com/embed") ? (
                 <iframe
-                  src={`${variant.previewVideoUrl}?autoplay=1&mute=1&loop=1&playlist=${variant.previewVideoUrl.split("/").pop()?.split("?")[0]}`}
+                  src={`${variant.previewVideoUrl}?controls=1&rel=0&modestbranding=1`}
                   className="w-full h-full border-0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
@@ -101,34 +110,31 @@ export default function TemplateDetail() {
                 <video
                   src={variant.previewVideoUrl}
                   poster={collection.coverImage} // Fallback poster
-                  className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-300"
-                  autoPlay
-                  muted
-                  loop
+                  className="w-full h-full object-cover"
+                  controls
                   playsInline
                 />
               )}
-              
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90" />
-              
-              <div className="absolute bottom-0 left-0 right-0 p-6">
-                <h3 className="text-xl font-display font-bold text-white mb-4">{variant.name}</h3>
-                
-                <Button 
-                  onClick={() => handleUseTemplate(variant.templateLink)}
-                  className="w-full bg-white text-black hover:bg-primary hover:text-white font-bold transition-all duration-300 shadow-lg"
-                >
-                  {user ? (
-                    <>
-                      <ExternalLink className="mr-2 h-4 w-4" /> Use Template
-                    </>
-                  ) : (
-                    <>
-                      <Lock className="mr-2 h-4 w-4" /> Login to Use
-                    </>
-                  )}
-                </Button>
-              </div>
+            </div>
+
+            <div className="p-3 bg-card">
+              <h3 className="text-sm font-display font-medium text-white mb-2 line-clamp-1">{variant.name}</h3>
+
+              <Button
+                onClick={() => handleUseTemplate(variant.templateLink)}
+                size="sm"
+                className="w-full h-8 text-xs bg-white text-black hover:bg-primary hover:text-white font-bold transition-all duration-300 shadow-sm"
+              >
+                {user ? (
+                  <>
+                    <ExternalLink className="mr-1.5 h-3 w-3" /> Use
+                  </>
+                ) : (
+                  <>
+                    <Lock className="mr-1.5 h-3 w-3" /> Login
+                  </>
+                )}
+              </Button>
             </div>
           </motion.div>
         ))}
@@ -140,18 +146,47 @@ export default function TemplateDetail() {
           {/* Background effect */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-background z-0" />
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-50" />
-          
+
           <div className="relative z-10 max-w-2xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-display font-bold text-white mb-4">
               Don't know how to edit?
             </h2>
             <p className="text-white/60 text-lg mb-8">
-              Let our professional editors handle the complexity. Send us your clips and we'll deliver a viral-ready video using this template.
+              Let our professional editors handle the complexity. Send us your clips and we'll deliver a viral-ready video using this template.We also increase the quality of your videos🥰
             </p>
             <EditRequestDialog />
           </div>
         </div>
       </section>
-    </div>
+
+      {/* Contact Popup */}
+      {showContactPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-black border border-primary/50 p-8 rounded-2xl max-w-md w-full text-center relative shadow-[0_0_30px_-5px_rgba(168,85,247,0.5)] font-display"
+          >
+            <button
+              onClick={() => setShowContactPopup(false)}
+              className="absolute top-4 right-4 text-white/50 hover:text-white transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <h3 className="text-xl font-bold text-white mb-4">Template Not Available</h3>
+            <p className="text-white/90 mb-6 text-sm leading-relaxed" style={{ fontFamily: 'Poppins, sans-serif' }}>
+              Contact our insta page <a href="https://instagram.com/ft.edits4baddies_" target="_blank" rel="noreferrer" className="text-primary hover:underline font-bold">@ft.edits4baddies</a> for this edit.<br /><br />
+              <span className="text-white/60 text-xs">(actually template is not available but we can make it for you)</span>
+            </p>
+            <Button
+              onClick={() => setShowContactPopup(false)}
+              className="w-full bg-primary hover:bg-primary/90 text-white font-bold tracking-wider"
+            >
+              OK, GOT IT
+            </Button>
+          </motion.div>
+        </div>
+      )}
+    </div >
   );
 }
