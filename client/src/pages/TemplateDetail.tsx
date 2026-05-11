@@ -101,7 +101,7 @@ export default function TemplateDetail() {
             <div className="relative aspect-[9/16] bg-black border-b border-white/10">
               {variant.previewVideoUrl?.includes("youtube.com/embed") ? (
                 <iframe
-                  src={`${variant.previewVideoUrl}?controls=0&rel=0&modestbranding=1&disablekb=1`}
+                  src={`${variant.previewVideoUrl}?controls=1&rel=0&modestbranding=1`}
                   className="w-full h-full border-0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
