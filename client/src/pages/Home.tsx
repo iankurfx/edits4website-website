@@ -11,10 +11,11 @@ export default function Home({ filter }: { filter?: 'trending' | 'new' }) {
   const { searchQuery } = useSearch();
 
   const breakpointColumns = {
-    default: 4,
-    1280: 4,
-    1024: 3,
-    768: 2,
+    default: 6,
+    1536: 6,
+    1280: 5,
+    1024: 4,
+    768: 3,
     640: 2
   };
 

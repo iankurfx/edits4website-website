@@ -86,7 +86,7 @@ export default function TemplateDetail() {
       </div>
 
       {/* Variants Grid */}
-      <div className="container mx-auto px-2 md:px-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 mb-20">
+      <div className="container mx-auto px-2 md:px-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4 mb-20">
         {collection.variants.map((variant, idx) => (
           <motion.div
             key={variant.id}
